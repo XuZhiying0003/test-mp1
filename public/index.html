@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	</head>
+<body>
+	<div class="container-fluid" style="text-align:center">
+
+		<div class="page-header">
+			
+			<p class="lead">Forest Fire Detection System</p>
+      </div>
+
+		<div class="row" style="background-color:transparent">
+			<div align="center">
+
+				<div class="col-md-6" style="font-size:25px">
+					<div>
+						<span class="label label-default" style="font-size:20px">Temperature</span>				
+					</div>
+					<div>
+						<canvas id="gauge-temp" style="background-color:transparent;  width:200px; height:100px;"></canvas>
+					</div>
+					<div>
+						<div id="txt-gauge-temp" style="width:100px; height:100px; font-size: 35px; text-align: center; background-color:transparent"></div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="container-fluid map" id="map" style="width:350px; height:200px;"></div>
+				</div>
+			</div>
+		</div>
+				
+			
+	</div>
+
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://bernii.github.com/gauge.js/dist/gauge.min.js"></script>
+<script type="text/javascript" src="javascript/gauge.js"></script>
+<script type="text/javascript" src="javascript/googlemaps.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSqv9FMHThX9DU_JK_pbwxzBQushtGfv4&callback=myMap"></script>
+
+<script>
+
+var socket = io.connect();
+
+socket.on('location', function(location) {
+	city = location.city
+	country = location.country
+	lat = location.lat
+	lon = location.lon
+	query = location.query
+	region = location.region
+
+	var markerInfoText = (city + ", " + region + " - " + country + "<br>" + "lat: " + lat + "  lon: " + lon + "<br>" + "IP: " + query)
+
+	var infowindow = new google.maps.InfoWindow({
+    	content: markerInfoText
+  	});
+
+	map.setCenter(new google.maps.LatLng(lat, lon))	
+	var marker = new google.maps.Marker({
+		position: {lat: lat, lng: lon},
+		map: map,
+		title: 'Hello World!'
+	});
+	marker.addListener('click', function() {
+    	infowindow.open(map, marker);
+  	});
+
+	socket.emit('location', "got location");
+});
+
+socket.on('accelData', function(accelData) {
+	
+   var temp = accelData.data.temp
+    
+	
+	document.getElementById("txt-gauge-temp").innerHTML = temp+"°C";
+	// set gauge value
+	
+	gauge_temp.set(temp);
+
+   //socket.emit('accelData', "got accelData");
+});
+</script>
+
+
+
+
+
